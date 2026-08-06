@@ -15,22 +15,26 @@ import { formatTime12h, timeStringToMinutes } from '../lib/store';
 interface UpcomingScheduleWidgetProps {
   classes: ClassScheduleItem[];
   activeClassId?: number | null;
+  scheduleType: string;
+  onScheduleTypeChange: (type: string) => void;
 }
 
-export function UpcomingScheduleWidget({ classes, activeClassId }: UpcomingScheduleWidgetProps) {
+export function UpcomingScheduleWidget({ classes, activeClassId, scheduleType, onScheduleTypeChange }: UpcomingScheduleWidgetProps) {
   const [selectedDay, setSelectedDay] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const daysList = ['All', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const scheduleTypes = ['All', 'A', 'B'];
 
   const filteredClasses = [...classes]
     .filter((c) => {
       const matchesDay = selectedDay === 'All' || c.days.includes(selectedDay);
+      const matchesType = scheduleType === 'All' || c.scheduleType === scheduleType;
       const matchesSearch =
         c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.room.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (c.instructor && c.instructor.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesDay && matchesSearch;
+      return matchesDay && matchesType && matchesSearch;
     })
     .sort((a, b) => timeStringToMinutes(a.startTime) - timeStringToMinutes(b.startTime));
 
@@ -52,20 +56,38 @@ export function UpcomingScheduleWidget({ classes, activeClassId }: UpcomingSched
         </div>
 
         {/* Day Filters */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-medium">
-          {daysList.map((day) => (
-            <button
-              key={day}
-              onClick={() => setSelectedDay(day)}
-              className={`px-2.5 py-1 rounded-md transition ${
-                selectedDay === day
-                  ? 'bg-white text-indigo-600 font-bold shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {day}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-medium">
+            {daysList.map((day) => (
+              <button
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                className={`px-2.5 py-1 rounded-md transition ${
+                  selectedDay === day
+                    ? 'bg-white text-indigo-600 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-medium">
+            {scheduleTypes.map((type) => (
+              <button
+                key={type}
+                onClick={() => onScheduleTypeChange(type)}
+                className={`px-2.5 py-1 rounded-md transition ${
+                  scheduleType === type
+                    ? 'bg-white text-slate-900 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {type} Day
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -147,7 +169,12 @@ export function UpcomingScheduleWidget({ classes, activeClassId }: UpcomingSched
                     </span>
                   </div>
 
-                  <div className="flex items-center sm:justify-end gap-1">
+                  <div className="flex flex-wrap items-center sm:justify-end gap-1">
+                    {item.scheduleType && (
+                      <span className="px-1.5 py-0.5 text-[10px] rounded bg-indigo-50 text-indigo-700 font-medium border border-indigo-100">
+                        {item.scheduleType} Day
+                      </span>
+                    )}
                     {item.days.split(',').map((d) => (
                       <span
                         key={d}

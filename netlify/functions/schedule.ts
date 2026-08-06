@@ -19,6 +19,7 @@ export default async (req: Request) => {
             startTime: item.startTime,
             endTime: item.endTime,
             days: item.days,
+            scheduleType: item.scheduleType || 'All',
             instructor: item.instructor,
             color: item.color,
           });
@@ -39,6 +40,7 @@ export default async (req: Request) => {
             startTime: item.startTime,
             endTime: item.endTime,
             days: item.days,
+            scheduleType: item.scheduleType || 'All',
             instructor: item.instructor,
             color: item.color,
           });
@@ -55,6 +57,7 @@ export default async (req: Request) => {
           startTime: body.startTime,
           endTime: body.endTime,
           days: body.days || "Mon,Tue,Wed,Thu,Fri",
+          scheduleType: body.scheduleType || "All",
           instructor: body.instructor || "",
           color: body.color || "#3b82f6",
         })
@@ -75,6 +78,7 @@ export default async (req: Request) => {
           startTime: body.startTime,
           endTime: body.endTime,
           days: body.days,
+          scheduleType: body.scheduleType || 'All',
           instructor: body.instructor,
           color: body.color,
         })

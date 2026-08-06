@@ -18,6 +18,7 @@ export const classes = pgTable("classes", {
   startTime: text("start_time").notNull(), // format HH:MM
   endTime: text("end_time").notNull(),   // format HH:MM
   days: text("days").default("Mon,Tue,Wed,Thu,Fri"),
+  scheduleType: text("schedule_type").default("All"),
   instructor: text("instructor").default(""),
   color: text("color").default("#3b82f6"),
   createdAt: timestamp("created_at").defaultNow(),

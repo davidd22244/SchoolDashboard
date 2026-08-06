@@ -45,6 +45,7 @@ function SchoolDashboard() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [classes, setClasses] = useState<ClassScheduleItem[]>([]);
   const [emails, setEmails] = useState<EmailItem[]>([]);
+  const [scheduleType, setScheduleType] = useState<string>('All');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initial load
@@ -254,7 +255,7 @@ function SchoolDashboard() {
         </div>
 
         {/* Real-Time Class Countdown Timer Widget */}
-        <ClassCountdownWidget classes={classes} />
+<ClassCountdownWidget classes={classes} scheduleType={scheduleType} />
 
         {/* Dashboard Main Grid: Emails & Upcoming Schedule */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -272,6 +273,8 @@ function SchoolDashboard() {
           <UpcomingScheduleWidget
             classes={classes}
             activeClassId={activeClassId}
+            scheduleType={scheduleType}
+            onScheduleTypeChange={setScheduleType}
           />
 
         </div>

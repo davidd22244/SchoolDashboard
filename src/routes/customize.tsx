@@ -65,6 +65,7 @@ function CustomizePage() {
   const [classStartTime, setClassStartTime] = useState('09:00');
   const [classEndTime, setClassEndTime] = useState('10:15');
   const [classDays, setClassDays] = useState<string[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+  const [classScheduleType, setClassScheduleType] = useState<string>('All');
   const [classInstructor, setClassInstructor] = useState('');
   const [classColor, setClassColor] = useState('#3b82f6');
 
@@ -194,6 +195,7 @@ function CustomizePage() {
               startTime: classStartTime,
               endTime: classEndTime,
               days: daysStr,
+              scheduleType: classScheduleType,
               instructor: classInstructor,
               color: classColor,
             }
@@ -214,6 +216,7 @@ function CustomizePage() {
               startTime: classStartTime,
               endTime: classEndTime,
               days: daysStr,
+              scheduleType: classScheduleType,
               instructor: classInstructor,
               color: classColor,
             }),
@@ -232,6 +235,7 @@ function CustomizePage() {
         startTime: classStartTime,
         endTime: classEndTime,
         days: daysStr,
+        scheduleType: classScheduleType,
         instructor: classInstructor,
         color: classColor,
       };
@@ -273,6 +277,7 @@ function CustomizePage() {
     setClassStartTime('09:00');
     setClassEndTime('10:15');
     setClassDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+    setClassScheduleType('All');
     setClassInstructor('');
     setClassColor('#3b82f6');
   };
@@ -284,6 +289,7 @@ function CustomizePage() {
     setClassStartTime(item.startTime);
     setClassEndTime(item.endTime);
     setClassDays(item.days ? item.days.split(',') : []);
+    setClassScheduleType(item.scheduleType || 'All');
     setClassInstructor(item.instructor || '');
     setClassColor(item.color || '#3b82f6');
   };
@@ -700,6 +706,35 @@ function CustomizePage() {
                 </div>
               </div>
 
+              {/* Schedule Type */}
+              <div>
+                <label className="block font-medium text-slate-300 mb-1">
+                  Schedule Type
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {['All', 'A', 'B'].map((type) => {
+                    const selected = classScheduleType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setClassScheduleType(type)}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium border transition ${
+                          selected
+                            ? 'bg-emerald-600 border-emerald-500 text-white'
+                            : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        {type} Day
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-slate-500 mt-2">
+                  Select whether this class belongs to your A day, B day, or all schedules.
+                </p>
+              </div>
+
               {/* Color accent */}
               <div>
                 <label className="block font-medium text-slate-300 mb-1">
@@ -781,6 +816,10 @@ function CustomizePage() {
                         {item.instructor && (
                           <span className="text-slate-400">({item.instructor})</span>
                         )}
+
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                          {item.scheduleType || 'All'} Day
+                        </span>
                       </div>
                     </div>
 

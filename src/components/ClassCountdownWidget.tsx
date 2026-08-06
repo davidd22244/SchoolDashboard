@@ -16,9 +16,10 @@ import { calculateClassStatus, ClassTimeStatus, formatTime12h } from '../lib/sto
 
 interface ClassCountdownWidgetProps {
   classes: ClassScheduleItem[];
+  scheduleType?: string;
 }
 
-export function ClassCountdownWidget({ classes }: ClassCountdownWidgetProps) {
+export function ClassCountdownWidget({ classes, scheduleType = 'All' }: ClassCountdownWidgetProps) {
   const [simulatedTime, setSimulatedTime] = useState<string>(''); // e.g. "08:45"
   const [useSimulation, setSimulated] = useState<boolean>(false);
   const [now, setNow] = useState<Date>(new Date());
@@ -58,7 +59,7 @@ export function ClassCountdownWidget({ classes }: ClassCountdownWidgetProps) {
     setNow(new Date());
   };
 
-  const timeStatus: ClassTimeStatus = calculateClassStatus(classes, now);
+  const timeStatus: ClassTimeStatus = calculateClassStatus(classes, now, scheduleType);
   const { currentClass, nextClass, status, percentComplete, formattedRemaining } = timeStatus;
 
   // Formatting clock time

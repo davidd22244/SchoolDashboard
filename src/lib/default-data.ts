@@ -7,6 +7,7 @@ export interface ClassScheduleItem {
   days: string;      // e.g. "Mon,Tue,Wed,Thu,Fri"
   instructor: string;
   color: string;
+  scheduleType?: string; // e.g. "All", "A", "B"
 }
 
 export interface EmailItem {
@@ -47,6 +48,7 @@ export const DEFAULT_CLASSES: ClassScheduleItem[] = [
     days: 'Mon,Tue,Wed,Thu,Fri',
     instructor: 'Dr. Sarah Jenkins',
     color: '#3b82f6',
+    scheduleType: 'A',
   },
   {
     id: 2,
@@ -57,6 +59,7 @@ export const DEFAULT_CLASSES: ClassScheduleItem[] = [
     days: 'Mon,Tue,Wed,Thu,Fri',
     instructor: 'Prof. Alan Vance',
     color: '#8b5cf6',
+    scheduleType: 'B',
   },
   {
     id: 3,
@@ -67,6 +70,7 @@ export const DEFAULT_CLASSES: ClassScheduleItem[] = [
     days: 'Mon,Wed,Fri',
     instructor: 'Ms. Clara Oswald',
     color: '#ec4899',
+    scheduleType: 'A',
   },
   {
     id: 4,
@@ -77,6 +81,7 @@ export const DEFAULT_CLASSES: ClassScheduleItem[] = [
     days: 'Mon,Tue,Wed,Thu,Fri',
     instructor: 'N/A',
     color: '#f59e0b',
+    scheduleType: 'All',
   },
   {
     id: 5,
@@ -87,6 +92,7 @@ export const DEFAULT_CLASSES: ClassScheduleItem[] = [
     days: 'Mon,Tue,Wed,Thu,Fri',
     instructor: 'Mr. David Lee',
     color: '#10b981',
+    scheduleType: 'A',
   },
   {
     id: 6,
@@ -97,6 +103,7 @@ export const DEFAULT_CLASSES: ClassScheduleItem[] = [
     days: 'Tue,Thu',
     instructor: 'Mrs. Rebecca Taylor',
     color: '#6366f1',
+    scheduleType: 'B',
   },
 ];
 

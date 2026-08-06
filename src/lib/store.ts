@@ -45,7 +45,8 @@ function getWeekdayShortName(date: Date): string {
 // Calculate status for current time
 export function calculateClassStatus(
   classes: ClassScheduleItem[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  scheduleType: string = 'All'
 ): ClassTimeStatus {
   if (!classes || classes.length === 0) {
     return {
@@ -69,7 +70,8 @@ export function calculateClassStatus(
     c.days
       .split(',')
       .map((d) => d.trim())
-      .includes(currentDay)
+      .includes(currentDay) &&
+    (scheduleType === 'All' || c.scheduleType === scheduleType)
   );
 
   if (todaysClasses.length === 0) {
