@@ -35,6 +35,8 @@ export default async (req: Request) => {
             email: body.email || DEFAULT_SETTINGS.email,
             userName: body.userName || DEFAULT_SETTINGS.userName,
             storageMode: body.storageMode || DEFAULT_SETTINGS.storageMode,
+            googleEmail: body.googleEmail || null,
+            googleRefreshToken: body.googleRefreshToken || null,
           })
           .returning();
       } else {
@@ -44,6 +46,8 @@ export default async (req: Request) => {
             email: body.email ?? settingsList[0].email,
             userName: body.userName ?? settingsList[0].userName,
             storageMode: body.storageMode ?? settingsList[0].storageMode,
+            googleEmail: body.googleEmail ?? settingsList[0].googleEmail,
+            googleRefreshToken: body.googleRefreshToken ?? settingsList[0].googleRefreshToken,
             updatedAt: new Date(),
           })
           .where(eq(userSettings.id, settingsList[0].id))

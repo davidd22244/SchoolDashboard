@@ -38,6 +38,10 @@ export function formatTime12h(timeStr: string): string {
   return `${displayHours}:${displayMinutes} ${period}`;
 }
 
+function getWeekdayShortName(date: Date): string {
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+}
+
 // Calculate status for current time
 export function calculateClassStatus(
   classes: ClassScheduleItem[],
@@ -55,10 +59,30 @@ export function calculateClassStatus(
     };
   }
 
-  // Sort classes by start time
+  // Sort classes by start time, then filter for today
   const sortedClasses = [...classes].sort(
     (a, b) => timeStringToMinutes(a.startTime) - timeStringToMinutes(b.startTime)
   );
+
+  const currentDay = getWeekdayShortName(now);
+  const todaysClasses = sortedClasses.filter((c) =>
+    c.days
+      .split(',')
+      .map((d) => d.trim())
+      .includes(currentDay)
+  );
+
+  if (todaysClasses.length === 0) {
+    return {
+      currentClass: null,
+      nextClass: null,
+      status: 'no_classes_today',
+      timeRemainingSeconds: 0,
+      totalDurationSeconds: 0,
+      percentComplete: 0,
+      formattedRemaining: 'No classes scheduled today',
+    };
+  }
 
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const currentSeconds = now.getSeconds();
@@ -67,14 +91,14 @@ export function calculateClassStatus(
   let currentClass: ClassScheduleItem | null = null;
   let nextClass: ClassScheduleItem | null = null;
 
-  for (let i = 0; i < sortedClasses.length; i++) {
-    const c = sortedClasses[i];
+  for (let i = 0; i < todaysClasses.length; i++) {
+    const c = todaysClasses[i];
     const startSec = timeStringToMinutes(c.startTime) * 60;
     const endSec = timeStringToMinutes(c.endTime) * 60;
 
     if (nowTotalSeconds >= startSec && nowTotalSeconds < endSec) {
       currentClass = c;
-      nextClass = sortedClasses[i + 1] || null;
+      nextClass = todaysClasses[i + 1] || null;
       break;
     }
 
@@ -118,7 +142,7 @@ export function calculateClassStatus(
       ? `${Math.floor(mins / 60)}h ${mins % 60}m`
       : `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
 
-    const firstClassStartSec = timeStringToMinutes(sortedClasses[0].startTime) * 60;
+    const firstClassStartSec = timeStringToMinutes(todaysClasses[0].startTime) * 60;
     const status = nowTotalSeconds < firstClassStartSec ? 'before_school' : 'between_classes';
 
     return {
@@ -135,7 +159,7 @@ export function calculateClassStatus(
   // After all classes for the day
   return {
     currentClass: null,
-    nextClass: sortedClasses[0] || null, // next class tomorrow
+    nextClass: null,
     status: 'after_school',
     timeRemainingSeconds: 0,
     totalDurationSeconds: 0,

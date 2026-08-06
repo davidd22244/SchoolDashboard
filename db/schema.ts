@@ -5,6 +5,8 @@ export const userSettings = pgTable("user_settings", {
   email: text("email").notNull(),
   userName: text("user_name").default("Student"),
   storageMode: text("storage_mode").default("hybrid"),
+  googleEmail: text("google_email").nullable(),
+  googleRefreshToken: text("google_refresh_token").nullable(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

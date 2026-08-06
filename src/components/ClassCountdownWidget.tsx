@@ -26,18 +26,19 @@ export function ClassCountdownWidget({ classes }: ClassCountdownWidgetProps) {
   // Tick every second
   useEffect(() => {
     const timer = setInterval(() => {
-      if (!useSimulation) {
+      if (!useSimulation || !simulatedTime) {
         setNow(new Date());
-      } else if (simulatedTime) {
-        const [h, m] = simulatedTime.split(':').map(Number);
-        const simDate = new Date();
-        simDate.setHours(h || 0, m || 0, now.getSeconds());
-        setNow(simDate);
+        return;
       }
+
+      const [h, m] = simulatedTime.split(':').map(Number);
+      const simDate = new Date();
+      simDate.setHours(h || 0, m || 0, simDate.getSeconds());
+      setNow(simDate);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [useSimulation, simulatedTime, now]);
+  }, [useSimulation, simulatedTime]);
 
   // Handle simulation time change
   const handleTimeSim = (timeVal: string) => {

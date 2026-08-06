@@ -75,11 +75,25 @@ function CustomizePage() {
     setClasses(getLocalClasses());
     setEmails(getLocalEmails());
 
-    // Try fetching from server API if hybrid or server mode
-    fetchServerData();
+    const params = new URLSearchParams(window.location.search);
+    const googleConnected = params.get('google_connected');
+    const googleError = params.get('google_error');
+
+    if (googleConnected) {
+      showNotification('Google account connected successfully!');
+      fetchServerData('server');
+      window.history.replaceState(null, '', window.location.pathname);
+    } else if (googleError) {
+      showNotification('Google connection failed. Please try again.');
+      window.history.replaceState(null, '', window.location.pathname);
+    } else {
+      fetchServerData(s.storageMode);
+    }
   }, []);
 
-  const fetchServerData = async () => {
+  const fetchServerData = async (storageMode: 'local' | 'server' | 'hybrid' = 'hybrid') => {
+    if (storageMode === 'local') return;
+
     setIsLoadingServer(true);
     try {
       const [resSettings, resClasses, resEmails] = await Promise.all([
@@ -117,17 +131,46 @@ function CustomizePage() {
     e.preventDefault();
     saveLocalSettings(settings);
 
-    try {
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      });
-    } catch {
-      // fallback
+    if (settings.storageMode !== 'local') {
+      try {
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settings),
+        });
+      } catch {
+        // fallback
+      }
     }
 
     showNotification('Email & User Profile preferences saved successfully!');
+  };
+
+  const handleGoogleDisconnect = async () => {
+    const updatedSettings = { ...settings, googleEmail: undefined };
+    setSettings(updatedSettings);
+    saveLocalSettings(updatedSettings);
+
+    if (settings.storageMode !== 'local') {
+      try {
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...updatedSettings,
+            googleRefreshToken: null,
+          }),
+        });
+      } catch {
+        // fallback
+      }
+    }
+
+    showNotification('Google account disconnected.');
+  };
+
+  const handleGoogleConnect = () => {
+    window.location.href = '/api/google-auth';
   };
 
   // Save or Add Class
@@ -159,22 +202,24 @@ function CustomizePage() {
       setClasses(updatedList);
       saveLocalClasses(updatedList);
 
-      try {
-        await fetch('/api/schedule', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: editingClassId,
-            name: className,
-            room: classRoom,
-            startTime: classStartTime,
-            endTime: classEndTime,
-            days: daysStr,
-            instructor: classInstructor,
-            color: classColor,
-          }),
-        });
-      } catch {}
+      if (settings.storageMode !== 'local') {
+        try {
+          await fetch('/api/schedule', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: editingClassId,
+              name: className,
+              room: classRoom,
+              startTime: classStartTime,
+              endTime: classEndTime,
+              days: daysStr,
+              instructor: classInstructor,
+              color: classColor,
+            }),
+          });
+        } catch {}
+      }
 
       showNotification(`Class "${className}" updated!`);
     } else {
@@ -195,22 +240,24 @@ function CustomizePage() {
       setClasses(updatedList);
       saveLocalClasses(updatedList);
 
-      try {
-        const res = await fetch('/api/schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newClass),
-        });
-        if (res.ok) {
-          const serverClass = await res.json();
-          // replace temp id with server id if returned
-          if (serverClass && serverClass.id) {
-            const syncedList = updatedList.map((c) => (c.id === newId ? serverClass : c));
-            setClasses(syncedList);
-            saveLocalClasses(syncedList);
+      if (settings.storageMode !== 'local') {
+        try {
+          const res = await fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newClass),
+          });
+          if (res.ok) {
+            const serverClass = await res.json();
+            // replace temp id with server id if returned
+            if (serverClass && serverClass.id) {
+              const syncedList = updatedList.map((c) => (c.id === newId ? serverClass : c));
+              setClasses(syncedList);
+              saveLocalClasses(syncedList);
+            }
           }
-        }
-      } catch {}
+        } catch {}
+      }
 
       showNotification(`Added new class "${className}"!`);
     }
@@ -247,9 +294,11 @@ function CustomizePage() {
     setClasses(updatedList);
     saveLocalClasses(updatedList);
 
-    try {
-      await fetch(`/api/schedule?id=${id}`, { method: 'DELETE' });
-    } catch {}
+    if (settings.storageMode !== 'local') {
+      try {
+        await fetch(`/api/schedule?id=${id}`, { method: 'DELETE' });
+      } catch {}
+    }
 
     showNotification('Class removed from schedule.');
   };
@@ -265,20 +314,22 @@ function CustomizePage() {
     saveLocalClasses(DEFAULT_CLASSES);
     saveLocalEmails(DEFAULT_EMAILS);
 
-    try {
-      await Promise.all([
-        fetch('/api/schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'reset' }),
-        }),
-        fetch('/api/emails', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'reset' }),
-        }),
-      ]);
-    } catch {}
+    if (settings.storageMode !== 'local') {
+      try {
+        await Promise.all([
+          fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'reset' }),
+          }),
+          fetch('/api/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'reset' }),
+          }),
+        ]);
+      } catch {}
+    }
 
     showNotification('Reset to default schedule, emails, and settings!');
   };
@@ -395,6 +446,37 @@ function CustomizePage() {
                 </button>
               </div>
             </form>
+
+            <div className="mt-4 rounded-2xl bg-slate-800 border border-slate-700 p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Google Gmail Integration</p>
+                  <p className="text-sm text-slate-200 mt-1">
+                    {settings.googleEmail ? `Connected to ${settings.googleEmail}` : 'Connect your Gmail inbox for live messages.'}
+                  </p>
+                </div>
+                <div>
+                  {settings.googleEmail ? (
+                    <button
+                      onClick={handleGoogleDisconnect}
+                      className="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-200 text-xs font-semibold hover:bg-slate-600"
+                    >
+                      Disconnect
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleGoogleConnect}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-400"
+                    >
+                      Connect Gmail
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Requires Google OAuth credentials configured in Netlify environment variables.
+              </p>
+            </div>
           </div>
 
           {/* Card 2: Storage Parameter Choice */}
@@ -479,7 +561,7 @@ function CustomizePage() {
               </span>
 
               <button
-                onClick={fetchServerData}
+                onClick={() => fetchServerData(settings.storageMode)}
                 disabled={isLoadingServer}
                 className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-200 font-medium border border-slate-700 transition"
               >

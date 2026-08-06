@@ -55,32 +55,58 @@ function SchoolDashboard() {
     setEmails(getLocalEmails());
     setIsLoading(false);
 
-    // Fetch updated data from server API
-    fetchServerData();
+    // Fetch updated data from server API and Gmail if connected.
+    fetchServerData(s.storageMode, s.googleEmail);
   }, []);
 
-  const fetchServerData = async () => {
-    try {
-      const [resSettings, resClasses, resEmails] = await Promise.all([
-        fetch('/api/settings').then((r) => (r.ok ? r.json() : null)),
-        fetch('/api/schedule').then((r) => (r.ok ? r.json() : null)),
-        fetch('/api/emails').then((r) => (r.ok ? r.json() : null)),
-      ]);
+  const fetchServerData = async (
+    storageMode: 'local' | 'server' | 'hybrid' = 'hybrid',
+    googleEmailToUse?: string
+  ) => {
+    let latestGoogleEmail = googleEmailToUse;
+    let fetchedSettings: UserSettings | null = null;
 
-      if (resSettings && resSettings.email) {
-        setSettings(resSettings);
-        saveLocalSettings(resSettings);
+    if (storageMode !== 'local') {
+      try {
+        const [resSettings, resClasses, resEmails] = await Promise.all([
+          fetch('/api/settings').then((r) => (r.ok ? r.json() : null)),
+          fetch('/api/schedule').then((r) => (r.ok ? r.json() : null)),
+          fetch('/api/emails').then((r) => (r.ok ? r.json() : null)),
+        ]);
+
+        if (resSettings && resSettings.email) {
+          setSettings(resSettings);
+          saveLocalSettings(resSettings);
+          fetchedSettings = resSettings;
+          latestGoogleEmail = resSettings.googleEmail || latestGoogleEmail;
+        }
+        if (resClasses && Array.isArray(resClasses) && resClasses.length > 0) {
+          setClasses(resClasses);
+          saveLocalClasses(resClasses);
+        }
+        if (resEmails && Array.isArray(resEmails) && resEmails.length > 0) {
+          setEmails(resEmails);
+          saveLocalEmails(resEmails);
+        }
+      } catch {
+        // Local storage fallback is already active
       }
-      if (resClasses && Array.isArray(resClasses) && resClasses.length > 0) {
-        setClasses(resClasses);
-        saveLocalClasses(resClasses);
+    }
+
+      if (fetchedSettings?.googleEmail || latestGoogleEmail) {
+        try {
+          const gmailRes = await fetch('/api/gmail');
+          if (gmailRes.ok) {
+            const gmailEmails = await gmailRes.json();
+            if (Array.isArray(gmailEmails) && gmailEmails.length > 0) {
+              setEmails(gmailEmails);
+              saveLocalEmails(gmailEmails);
+            }
+          }
+        } catch {
+          // Gmail fetch may fail if token is invalid or not connected
+        }
       }
-      if (resEmails && Array.isArray(resEmails) && resEmails.length > 0) {
-        setEmails(resEmails);
-        saveLocalEmails(resEmails);
-      }
-    } catch {
-      // Local storage fallback is already active
     }
   };
 
@@ -89,6 +115,8 @@ function SchoolDashboard() {
     const newList = emails.map((e) => (e.id === updatedEmail.id ? updatedEmail : e));
     setEmails(newList);
     saveLocalEmails(newList);
+
+    if (settings.storageMode === 'local') return;
 
     try {
       await fetch('/api/emails', {
@@ -104,6 +132,8 @@ function SchoolDashboard() {
     setEmails(newList);
     saveLocalEmails(newList);
 
+    if (settings.storageMode === 'local') return;
+
     try {
       await fetch(`/api/emails?id=${id}`, { method: 'DELETE' });
     } catch {}
@@ -116,6 +146,8 @@ function SchoolDashboard() {
     const newList = [tempEmail, ...emails];
     setEmails(newList);
     saveLocalEmails(newList);
+
+    if (settings.storageMode === 'local') return;
 
     try {
       const res = await fetch('/api/emails', {
@@ -231,7 +263,7 @@ function SchoolDashboard() {
           {/* Emails Widget */}
           <EmailsWidget
             emails={emails}
-            userEmail={settings.email}
+            userEmail={settings.googleEmail || settings.email}
             onUpdateEmail={handleUpdateEmail}
             onDeleteEmail={handleDeleteEmail}
             onAddEmail={handleAddEmail}

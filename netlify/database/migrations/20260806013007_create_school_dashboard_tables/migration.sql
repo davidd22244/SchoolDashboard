@@ -27,6 +27,8 @@ CREATE TABLE "user_settings" (
 	"email" text NOT NULL,
 	"user_name" text DEFAULT 'Student',
 	"storage_mode" text DEFAULT 'hybrid',
+	"google_email" text,
+	"google_refresh_token" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );

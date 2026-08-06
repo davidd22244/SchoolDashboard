@@ -25,12 +25,16 @@ export interface UserSettings {
   email: string;
   userName: string;
   storageMode: 'local' | 'server' | 'hybrid';
+  googleConnected?: boolean;
+  googleEmail?: string;
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
   email: 'alex.student@lincolnhigh.edu',
   userName: 'Alex Morgan',
   storageMode: 'hybrid',
+  googleConnected: false,
+  googleEmail: undefined,
 };
 
 export const DEFAULT_CLASSES: ClassScheduleItem[] = [

@@ -311,6 +311,32 @@
       "table": "user_settings"
     },
     {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "google_email",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_settings"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "google_refresh_token",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_settings"
+    },
+    {
       "type": "timestamp",
       "typeSchema": null,
       "notNull": false,
