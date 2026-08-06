@@ -93,19 +93,18 @@ function SchoolDashboard() {
       }
     }
 
-      if (fetchedSettings?.googleEmail || latestGoogleEmail) {
-        try {
-          const gmailRes = await fetch('/api/gmail');
-          if (gmailRes.ok) {
-            const gmailEmails = await gmailRes.json();
-            if (Array.isArray(gmailEmails) && gmailEmails.length > 0) {
-              setEmails(gmailEmails);
-              saveLocalEmails(gmailEmails);
-            }
+    if (fetchedSettings?.googleEmail || latestGoogleEmail) {
+      try {
+        const gmailRes = await fetch('/api/gmail');
+        if (gmailRes.ok) {
+          const gmailEmails = await gmailRes.json();
+          if (Array.isArray(gmailEmails) && gmailEmails.length > 0) {
+            setEmails(gmailEmails);
+            saveLocalEmails(gmailEmails);
           }
-        } catch {
-          // Gmail fetch may fail if token is invalid or not connected
         }
+      } catch {
+        // Gmail fetch may fail if token is invalid or not connected
       }
     }
   };
